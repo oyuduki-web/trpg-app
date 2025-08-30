@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Edit, History, BookOpen, ImageIcon, Shield, TrendingUp, Brain, AlertTriangle, Calendar, User } from 'lucide-react'
+import Image from 'next/image'
+import { ArrowLeft, Edit, History, BookOpen, ImageIcon, Shield, TrendingUp, Brain, AlertTriangle, Calendar, User, Trash2 } from 'lucide-react'
 import { Character } from '@/generated/prisma'
 import { getSkillNameJa } from '@/lib/skill-names'
+import Navigation from '@/components/Navigation'
 
 interface CharacterWithParsedSkills extends Omit<Character, 'skills'> {
   skills: Record<string, number>
@@ -49,12 +51,17 @@ interface SessionHistory {
 
 export default function CharacterDetailPage() {
   const params = useParams()
+  const router = useRouter()
   const characterId = params.id as string
   const [character, setCharacter] = useState<CharacterWithParsedSkills | null>(null)
   const [sessions, setSessions] = useState<SessionHistory[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'history'>('overview')
   const [historyFilter, setHistoryFilter] = useState<'all' | 'skills' | 'sanity'>('all')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [sessionToDelete, setSessionToDelete] = useState<string | null>(null)
+  const [isDeletingSession, setIsDeletingSession] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -97,6 +104,54 @@ export default function CharacterDetailPage() {
     return sessions
   }
 
+  const handleDeleteCharacter = async () => {
+    if (!character) return
+
+    setIsDeleting(true)
+    try {
+      const response = await fetch(`/api/characters/${characterId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        // 削除成功時はトップページに戻る
+        router.push('/')
+      } else {
+        console.error('キャラクター削除に失敗しました')
+        alert('キャラクターの削除に失敗しました')
+      }
+    } catch (error) {
+      console.error('削除エラー:', error)
+      alert('キャラクターの削除に失敗しました')
+    } finally {
+      setIsDeleting(false)
+      setShowDeleteConfirm(false)
+    }
+  }
+
+  const handleDeleteSession = async (sessionId: string) => {
+    setIsDeletingSession(true)
+    try {
+      const response = await fetch(`/api/sessions/${sessionId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        // セッション一覧から削除されたセッションを除外
+        setSessions(prev => prev.filter(session => session.id !== sessionId))
+        setSessionToDelete(null)
+      } else {
+        console.error('セッション削除に失敗しました')
+        alert('セッションの削除に失敗しました')
+      }
+    } catch (error) {
+      console.error('セッション削除エラー:', error)
+      alert('セッションの削除に失敗しました')
+    } finally {
+      setIsDeletingSession(false)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -120,20 +175,104 @@ export default function CharacterDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Navigation 
+        title={character.name}
+        backHref="/"
+      />
       <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Link 
-              href="/"
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              戻る
-            </Link>
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
-              {character.name}
-            </h1>
+        {/* ヘッダー（立ち絵付き） */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
+          <div className="flex items-start gap-6">
+            {/* 立ち絵表示 */}
+            {character.images && character.images.length > 0 ? (
+              <div className="flex-shrink-0">
+                <div className="w-48 h-64 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 relative">
+                  <Image
+                    src={character.images[0].filePath}
+                    alt={`${character.name}の立ち絵`}
+                    width={192}
+                    height={256}
+                    className="object-cover"
+                    onError={() => {
+                      // 画像読み込みエラー時の処理
+                      console.log('画像の読み込みに失敗しました:', character.images[0].filePath)
+                    }}
+                  />
+                </div>
+                {character.images[0].imageName && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
+                    {character.images[0].imageName}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="flex-shrink-0">
+                <div className="w-48 h-64 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                  <User className="w-16 h-16 text-gray-400" />
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
+                  立ち絵なし
+                </p>
+              </div>
+            )}
+            
+            {/* キャラクター情報 */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
+                    {character.name}
+                  </h1>
+                  <div className="space-y-1 text-gray-600 dark:text-gray-300">
+                    {character.occupation && (
+                      <p className="text-lg">{character.occupation}</p>
+                    )}
+                    <div className="flex gap-4 text-sm">
+                      {character.age && <span>年齢: {character.age}歳</span>}
+                      {character.gender && <span>性別: {character.gender}</span>}
+                    </div>
+                    <div className="flex gap-4 text-sm">
+                      {character.birthplace && <span>出身: {character.birthplace}</span>}
+                      {character.residence && <span>現住所: {character.residence}</span>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* 重要ステータス */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="text-lg font-semibold text-gray-800 dark:text-white">
+                    {character.hp}/{character.maxHp}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">HP</div>
+                </div>
+                <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="text-lg font-semibold text-gray-800 dark:text-white">
+                    {character.mp}/{character.maxMp}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">MP</div>
+                </div>
+                <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="text-lg font-semibold text-gray-800 dark:text-white">
+                    {character.san}/{character.maxSan}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">SAN値</div>
+                </div>
+                <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <div className="text-lg font-semibold text-gray-800 dark:text-white">
+                    {character.mov}
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">MOV</div>
+                </div>
+              </div>
+            </div>
           </div>
+        </div>
+
+        {/* アクションボタン */}
+        <div className="flex items-center justify-between mb-8">
+          <div></div>
           <div className="flex gap-2 flex-wrap">
             <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
               <Edit className="w-4 h-4" />
@@ -160,6 +299,13 @@ export default function CharacterDetailPage() {
               <Shield className="w-4 h-4" />
               バックアップ
             </Link>
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+              削除
+            </button>
           </div>
         </div>
 
@@ -186,7 +332,7 @@ export default function CharacterDetailPage() {
                 }`}
               >
                 <BookOpen className="w-4 h-4" />
-                冒険履歴
+                通過履歴
                 {sessions.length > 0 && (
                   <span className="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-xs font-semibold px-2 py-1 rounded-full">
                     {sessions.length}
@@ -320,7 +466,7 @@ export default function CharacterDetailPage() {
           </div>
         )}
 
-        {/* 冒険履歴タブ */}
+        {/* 通過履歴タブ */}
         {activeTab === 'history' && (
           <div>
             {/* フィルターボタン */}
@@ -364,7 +510,7 @@ export default function CharacterDetailPage() {
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
                 <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
-                  まだ冒険履歴がありません
+                  まだ通過履歴がありません
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400">
                   セッション記録を追加すると、ここに履歴が表示されます
@@ -376,7 +522,7 @@ export default function CharacterDetailPage() {
                   <div key={session.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
                     {/* セッション基本情報 */}
                     <div className="flex items-start justify-between mb-4">
-                      <div>
+                      <div className="flex-1">
                         <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-1">
                           {session.scenario.title}
                         </h3>
@@ -398,6 +544,15 @@ export default function CharacterDetailPage() {
                           </p>
                         )}
                       </div>
+                      
+                      {/* 削除ボタン */}
+                      <button
+                        onClick={() => setSessionToDelete(session.id)}
+                        className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+                        title="このセッション記録を削除"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
 
                     {/* 変更内容 */}
@@ -489,6 +644,142 @@ export default function CharacterDetailPage() {
           </div>
         )}
       </div>
+
+      {/* 削除確認ダイアログ */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
+                <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  キャラクターを削除
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  この操作は取り消せません
+                </p>
+              </div>
+            </div>
+            
+            <div className="mb-6">
+              <p className="text-gray-700 dark:text-gray-300 mb-2">
+                <span className="font-semibold">{character.name}</span> を削除してもよろしいですか？
+              </p>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                <p>• すべてのセッション履歴</p>
+                <p>• 技能成長・SAN値変動履歴</p>
+                <p>• 狂気症状履歴</p>
+                <p>• アップロードした立ち絵</p>
+                <p className="mt-2 text-red-600 dark:text-red-400 font-medium">
+                  これらのデータはすべて完全に削除されます。
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isDeleting}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors disabled:opacity-50"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={handleDeleteCharacter}
+                disabled={isDeleting}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isDeleting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    削除中...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    削除する
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* セッション削除確認ダイアログ */}
+      {sessionToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
+                <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  セッション記録を削除
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  この操作は取り消せません
+                </p>
+              </div>
+            </div>
+            
+            <div className="mb-6">
+              {(() => {
+                const session = sessions.find(s => s.id === sessionToDelete)
+                return session ? (
+                  <div>
+                    <p className="text-gray-700 dark:text-gray-300 mb-2">
+                      <span className="font-semibold">{session.scenario.title}</span> のセッション記録を削除してもよろしいですか？
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      プレイ日: {new Date(session.playDate).toLocaleDateString('ja-JP')}
+                    </p>
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mt-3">
+                      <p className="text-red-600 dark:text-red-400 font-medium">
+                        以下のデータが削除されます：
+                      </p>
+                      <p>• 技能成長記録</p>
+                      <p>• SAN値変動記録</p>
+                      <p>• 狂気症状記録</p>
+                      <p>• セッションメモ</p>
+                    </div>
+                  </div>
+                ) : null
+              })()}
+            </div>
+            
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setSessionToDelete(null)}
+                disabled={isDeletingSession}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors disabled:opacity-50"
+              >
+                キャンセル
+              </button>
+              <button
+                onClick={() => handleDeleteSession(sessionToDelete)}
+                disabled={isDeletingSession}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isDeletingSession ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    削除中...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    削除する
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

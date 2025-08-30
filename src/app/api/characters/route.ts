@@ -8,14 +8,54 @@ export async function GET() {
         id: true,
         name: true,
         occupation: true,
+        age: true,
+        san: true,
+        maxSan: true,
         createdAt: true,
+        updatedAt: true,
+        sessions: {
+          select: {
+            playDate: true,
+            scenario: {
+              select: {
+                title: true,
+              }
+            }
+          },
+          orderBy: {
+            playDate: 'desc'
+          },
+          take: 1
+        },
+        _count: {
+          select: {
+            sessions: true,
+            insanitySymptoms: {
+              where: {
+                isRecovered: false
+              }
+            }
+          }
+        }
       },
       orderBy: {
-        createdAt: 'desc',
+        updatedAt: 'desc',
       },
     })
 
-    return NextResponse.json(characters)
+    // 最終プレイ日と追加情報を含むデータに変換
+    const charactersWithLastPlay = characters.map(character => ({
+      ...character,
+      lastPlayDate: character.sessions[0]?.playDate || null,
+      lastScenario: character.sessions[0]?.scenario?.title || null,
+      sessionCount: character._count.sessions,
+      activeSymptoms: character._count.insanitySymptoms,
+      status: character._count.sessions === 0 ? 'new' : 
+              (character.sessions[0]?.playDate && 
+               new Date(character.sessions[0].playDate) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)) ? 'active' : 'inactive'
+    }))
+
+    return NextResponse.json(charactersWithLastPlay)
   } catch (error) {
     console.error('キャラクター取得エラー:', error)
     return NextResponse.json(

@@ -11,6 +11,13 @@ export async function GET(
       where: {
         id,
       },
+      include: {
+        images: {
+          orderBy: {
+            createdAt: 'asc'
+          }
+        }
+      }
     })
 
     if (!character) {
