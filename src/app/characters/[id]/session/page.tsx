@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Save, Plus, Minus, TrendingUp, Brain, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Save, Plus, Minus, TrendingUp, Brain, AlertTriangle, X, Check } from 'lucide-react'
 import { Character } from '@/generated/prisma'
 import { CthulhuSkills, SkillGrowthResult, InsanitySymptomType } from '@/types/cthulhu'
 
@@ -49,6 +49,9 @@ export default function SessionUpdatePage() {
   })
 
   const [activeTab, setActiveTab] = useState<'basic' | 'skills' | 'sanity'>('basic')
+  const [showSkillGrowthModal, setShowSkillGrowthModal] = useState(false)
+  const [selectedSkill, setSelectedSkill] = useState<{ name: string; currentValue: number } | null>(null)
+  const [growthInput, setGrowthInput] = useState('')
 
   useEffect(() => {
     fetchCharacter()
@@ -70,32 +73,53 @@ export default function SessionUpdatePage() {
   }
 
   const handleSkillGrowthToggle = (skillName: string, currentValue: number) => {
-    setSessionData(prev => {
-      const existingIndex = prev.skillGrowth.findIndex(g => g.skillName === skillName)
-      
-      if (existingIndex >= 0) {
-        // 既存の成長を削除
-        return {
-          ...prev,
-          skillGrowth: prev.skillGrowth.filter((_, i) => i !== existingIndex)
+    const existingIndex = sessionData.skillGrowth.findIndex(g => g.skillName === skillName)
+    
+    if (existingIndex >= 0) {
+      // 既存の成長を削除
+      setSessionData(prev => ({
+        ...prev,
+        skillGrowth: prev.skillGrowth.filter((_, i) => i !== existingIndex)
+      }))
+    } else {
+      // 成長値入力モーダルを表示
+      setSelectedSkill({ name: skillName, currentValue })
+      setGrowthInput('')
+      setShowSkillGrowthModal(true)
+    }
+  }
+
+  const handleSkillGrowthConfirm = () => {
+    if (!selectedSkill || !growthInput) return
+    
+    const growthValue = parseInt(growthInput)
+    if (isNaN(growthValue) || growthValue <= 0) {
+      alert('正しい成長値を入力してください（1以上の数値）')
+      return
+    }
+
+    setSessionData(prev => ({
+      ...prev,
+      skillGrowth: [
+        ...prev.skillGrowth,
+        {
+          skillName: selectedSkill.name,
+          oldValue: selectedSkill.currentValue,
+          newValue: Math.min(selectedSkill.currentValue + growthValue, 90),
+          grown: true
         }
-      } else {
-        // 新しい成長を追加（1d10で仮の値）
-        const growth = Math.floor(Math.random() * 10) + 1
-        return {
-          ...prev,
-          skillGrowth: [
-            ...prev.skillGrowth,
-            {
-              skillName,
-              oldValue: currentValue,
-              newValue: Math.min(currentValue + growth, 90),
-              grown: true
-            }
-          ]
-        }
-      }
-    })
+      ]
+    }))
+
+    setShowSkillGrowthModal(false)
+    setSelectedSkill(null)
+    setGrowthInput('')
+  }
+
+  const handleSkillGrowthCancel = () => {
+    setShowSkillGrowthModal(false)
+    setSelectedSkill(null)
+    setGrowthInput('')
   }
 
   const handleAddInsanity = () => {
@@ -309,7 +333,7 @@ export default function SessionUpdatePage() {
             {activeTab === 'skills' && (
               <div className="space-y-6">
                 <div className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                  成長した技能をクリックして選択してください。自動的に成長値が計算されます。
+                  成長した技能をクリックして選択し、成長値を入力してください。
                 </div>
                 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -490,6 +514,77 @@ export default function SessionUpdatePage() {
           </button>
         </div>
       </div>
+
+      {/* 技能成長値入力モーダル */}
+      {showSkillGrowthModal && selectedSkill && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  技能成長
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {selectedSkill.name} (現在値: {selectedSkill.currentValue}%)
+                </p>
+              </div>
+            </div>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                成長値を入力してください
+              </label>
+              <input
+                type="number"
+                value={growthInput}
+                onChange={(e) => setGrowthInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && growthInput && !isNaN(parseInt(growthInput)) && parseInt(growthInput) > 0) {
+                    handleSkillGrowthConfirm()
+                  } else if (e.key === 'Escape') {
+                    handleSkillGrowthCancel()
+                  }
+                }}
+                placeholder="1-10"
+                min="1"
+                max="90"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                autoFocus
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                通常は1d10（1-10）ですが、任意の値を入力できます
+              </p>
+              {growthInput && !isNaN(parseInt(growthInput)) && parseInt(growthInput) > 0 && (
+                <p className="text-sm text-green-600 dark:text-green-400 mt-2">
+                  {selectedSkill.currentValue}% → {Math.min(selectedSkill.currentValue + parseInt(growthInput), 90)}% 
+                  (+{Math.min(parseInt(growthInput), 90 - selectedSkill.currentValue)})
+                </p>
+              )}
+            </div>
+            
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={handleSkillGrowthCancel}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
+              >
+                <X className="w-4 h-4 inline mr-2" />
+                キャンセル
+              </button>
+              <button
+                onClick={handleSkillGrowthConfirm}
+                disabled={!growthInput || isNaN(parseInt(growthInput)) || parseInt(growthInput) <= 0}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Check className="w-4 h-4 inline mr-2" />
+                確定
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
