@@ -11,6 +11,12 @@ import Navigation from '@/components/Navigation'
 
 interface CharacterWithParsedSkills extends Omit<Character, 'skills'> {
   skills: Record<string, number>
+  images?: Array<{
+    id: string
+    filePath: string
+    imageName: string | null
+    createdAt: Date
+  }>
 }
 
 interface SessionHistory {
