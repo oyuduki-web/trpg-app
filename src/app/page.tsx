@@ -1,103 +1,132 @@
-import Image from "next/image";
+'use client'
+
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { Plus, Users, BookOpen } from 'lucide-react'
+
+interface Character {
+  id: string
+  name: string
+  occupation?: string
+  createdAt: string
+}
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [characters, setCharacters] = useState<Character[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  useEffect(() => {
+    fetchCharacters()
+  }, [])
+
+  const fetchCharacters = async () => {
+    try {
+      const response = await fetch('/api/characters')
+      if (response.ok) {
+        const data = await response.json()
+        setCharacters(data)
+      }
+    } catch (error) {
+      console.error('キャラクター取得エラー:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="container mx-auto px-4 py-8">
+        <header className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-2">
+            クトゥルフ神話TRPG キャラクター管理
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300">
+            キャラクターシートの作成・管理・履歴追跡
+          </p>
+        </header>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+          {/* 新規キャラクター作成カード */}
+          <Link 
+            href="/characters/new"
+            className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-500"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <div className="flex flex-col items-center text-center">
+              <Plus className="w-12 h-12 text-blue-500 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                新規キャラクター作成
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                新しい探索者を作成
+              </p>
+            </div>
+          </Link>
+
+          {/* いあきゃらインポートカード */}
+          <Link 
+            href="/import"
+            className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-green-500"
           >
-            Read our docs
-          </a>
+            <div className="flex flex-col items-center text-center">
+              <BookOpen className="w-12 h-12 text-green-500 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                いあきゃらからインポート
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                既存データを取り込み
+              </p>
+            </div>
+          </Link>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* キャラクター一覧 */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-2">
+              <Users className="w-6 h-6 text-blue-500" />
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
+                キャラクター一覧
+              </h2>
+            </div>
+          </div>
+
+          <div className="p-6">
+            {isLoading ? (
+              <p className="text-gray-600 dark:text-gray-300">読み込み中...</p>
+            ) : characters.length === 0 ? (
+              <p className="text-gray-600 dark:text-gray-300 text-center py-8">
+                キャラクターがありません。新規作成またはインポートしてください。
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {characters.map((character) => (
+                  <Link
+                    key={character.id}
+                    href={`/characters/${character.id}`}
+                    className="block p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-semibold text-gray-800 dark:text-white">
+                          {character.name}
+                        </h3>
+                        {character.occupation && (
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                            {character.occupation}
+                          </p>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        作成日: {new Date(character.createdAt).toLocaleDateString('ja-JP')}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
-  );
+  )
 }

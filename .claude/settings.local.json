@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(/Users/ogawayuduki/Downloads/**)",
+      "Bash(npx create-next-app:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

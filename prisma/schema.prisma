@@ -1,0 +1,161 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_PRISMA_URL")
+}
+
+model Character {
+  id          String   @id @default(cuid())
+  name        String
+  occupation  String?
+  age         Int?
+  gender      String?
+  birthplace  String?
+  residence   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 能力値
+  str         Int      @default(0)
+  con         Int      @default(0)
+  pow         Int      @default(0)
+  dex         Int      @default(0)
+  app         Int      @default(0)
+  siz         Int      @default(0)
+  int         Int      @default(0)
+  edu         Int      @default(0)
+  luck        Int      @default(0)
+
+  // 副能力値
+  hp          Int      @default(0)
+  maxHp       Int      @default(0)
+  mp          Int      @default(0)
+  maxMp       Int      @default(0)
+  san         Int      @default(0)
+  maxSan      Int      @default(0)
+  mov         Int      @default(0)
+  build       Int      @default(0)
+
+  // 技能値（JSON形式で保存）
+  skills      String   @default("{}")
+
+  // リレーション
+  sessions        Session[]
+  skillHistories  SkillHistory[]
+  sanityHistories SanityHistory[]
+  insanitySymptoms InsanitySymptom[]
+  images          CharacterImage[]
+
+  @@map("characters")
+}
+
+model Scenario {
+  id          String   @id @default(cuid())
+  title       String
+  author      String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // リレーション
+  sessions    Session[]
+
+  @@map("scenarios")
+}
+
+model Session {
+  id          String   @id @default(cuid())
+  characterId String
+  scenarioId  String
+  kpName      String?
+  playDate    DateTime
+  memo        String?
+  participants String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // リレーション
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  scenario    Scenario  @relation(fields: [scenarioId], references: [id])
+  
+  skillHistories  SkillHistory[]
+  sanityHistories SanityHistory[]
+  insanitySymptoms InsanitySymptom[]
+
+  @@map("sessions")
+}
+
+model SkillHistory {
+  id          String   @id @default(cuid())
+  characterId String
+  sessionId   String?
+  skillName   String
+  oldValue    Int
+  newValue    Int
+  reason      String?
+  createdAt   DateTime @default(now())
+
+  // リレーション
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  session     Session?  @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@map("skill_histories")
+}
+
+model SanityHistory {
+  id          String   @id @default(cuid())
+  characterId String
+  sessionId   String?
+  oldValue    Int
+  newValue    Int
+  reason      String
+  createdAt   DateTime @default(now())
+
+  // リレーション
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  session     Session?  @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@map("sanity_histories")
+}
+
+model InsanitySymptom {
+  id          String   @id @default(cuid())
+  characterId String
+  sessionId   String?
+  symptomType String   // "indefinite", "phobia", "mania"
+  symptomName String
+  description String?
+  isRecovered Boolean  @default(false)
+  recoveredAt DateTime?
+  createdAt   DateTime @default(now())
+
+  // リレーション
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  session     Session?  @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@map("insanity_symptoms")
+}
+
+model CharacterImage {
+  id          String   @id @default(cuid())
+  characterId String
+  filename    String
+  originalName String
+  imageName   String?  // "通常", "狂気時", "正装"など
+  filePath    String
+  fileSize    Int
+  mimeType    String
+  createdAt   DateTime @default(now())
+
+  // リレーション
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@map("character_images")
+}
