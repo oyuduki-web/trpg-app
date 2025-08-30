@@ -254,7 +254,9 @@ export default function Home() {
                             {character.san}/{character.maxSan}
                           </span>
                           {character.activeSymptoms > 0 && (
-                            <AlertTriangle className="w-4 h-4 text-red-500" title={`未回復の狂気症状: ${character.activeSymptoms}個`} />
+                            <div title={`未回復の狂気症状: ${character.activeSymptoms}個`}>
+                              <AlertTriangle className="w-4 h-4 text-red-500" />
+                            </div>
                           )}
                         </div>
                       </td>
