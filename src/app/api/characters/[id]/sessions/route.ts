@@ -17,7 +17,6 @@ export async function POST(
       memo,
       skillGrowth,
       sanityLoss,
-      sanityReason,
       insanitySymptoms
     } = body
 
@@ -89,7 +88,7 @@ export async function POST(
             sessionId: session.id,
             oldValue: character.san,
             newValue: newSanValue,
-            reason: sanityReason || `${scenarioTitle}でのSAN値減少`,
+            reason: `${scenarioTitle}でのSAN値減少`,
           }
         })
       }

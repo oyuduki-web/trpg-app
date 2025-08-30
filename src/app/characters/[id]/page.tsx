@@ -288,7 +288,7 @@ export default function CharacterDetailPage() {
               </div>
               
               {/* 重要ステータス */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              <div className="grid grid-cols-3 gap-4 mb-4">
                 <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div className="text-lg font-semibold text-gray-800 dark:text-white">
                     {character.hp}/{character.maxHp}
@@ -306,12 +306,6 @@ export default function CharacterDetailPage() {
                     {character.san}/{character.maxSan}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">SAN値</div>
-                </div>
-                <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <div className="text-lg font-semibold text-gray-800 dark:text-white">
-                    {character.mov}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">MOV</div>
                 </div>
               </div>
             </div>
@@ -473,7 +467,7 @@ export default function CharacterDetailPage() {
             <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
               副能力値
             </h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
                 <div className="text-sm text-gray-600 dark:text-gray-300">HP</div>
                 <div className="text-xl font-bold text-red-600">{character.hp} / {character.maxHp}</div>
@@ -485,10 +479,6 @@ export default function CharacterDetailPage() {
               <div className="text-center">
                 <div className="text-sm text-gray-600 dark:text-gray-300">SAN</div>
                 <div className="text-xl font-bold text-purple-600">{character.san} / {character.maxSan}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-sm text-gray-600 dark:text-gray-300">MOV</div>
-                <div className="text-xl font-bold text-green-600">{character.mov}</div>
               </div>
             </div>
           </div>

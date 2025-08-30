@@ -19,7 +19,6 @@ interface SessionData {
   memo: string
   skillGrowth: SkillGrowthResult[]
   sanityLoss: number
-  sanityReason: string
   insanitySymptoms: {
     type: InsanitySymptomType
     name: string
@@ -44,7 +43,6 @@ export default function SessionUpdatePage() {
     memo: '',
     skillGrowth: [],
     sanityLoss: 0,
-    sanityReason: '',
     insanitySymptoms: []
   })
 
@@ -403,18 +401,6 @@ export default function SessionUpdatePage() {
                       onChange={(e) => setSessionData(prev => ({ ...prev, sanityLoss: parseInt(e.target.value) || 0 }))}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       min="0"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      減少理由
-                    </label>
-                    <input
-                      type="text"
-                      value={sessionData.sanityReason}
-                      onChange={(e) => setSessionData(prev => ({ ...prev, sanityReason: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      placeholder="例: ショゴスを目撃"
                     />
                   </div>
                 </div>
