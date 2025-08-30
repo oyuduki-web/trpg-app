@@ -422,7 +422,7 @@ export default function CharacterDetailPage() {
             <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
               能力値
             </h2>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 md:grid-cols-4 gap-4">
               <div className="text-center">
                 <div className="text-sm text-gray-600 dark:text-gray-300">STR</div>
                 <div className="text-2xl font-bold text-gray-800 dark:text-white">{character.str}</div>
@@ -458,6 +458,14 @@ export default function CharacterDetailPage() {
               <div className="text-center">
                 <div className="text-sm text-gray-600 dark:text-gray-300">LUCK</div>
                 <div className="text-2xl font-bold text-gray-800 dark:text-white">{character.luck}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm text-gray-600 dark:text-gray-300">知識</div>
+                <div className="text-2xl font-bold text-gray-800 dark:text-white">{character.edu * 5}</div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm text-gray-600 dark:text-gray-300">アイデア</div>
+                <div className="text-2xl font-bold text-gray-800 dark:text-white">{character.int * 5}</div>
               </div>
             </div>
           </div>

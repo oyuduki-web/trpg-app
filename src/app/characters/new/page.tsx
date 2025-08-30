@@ -223,7 +223,7 @@ export default function NewCharacterPage() {
                   能力値
                 </h2>
                 <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                  6版ルール: STR/CON/POW/DEX/APP/INT = 3d6, SIZ = 2d6+6, EDU = 3d6+3, 幸運 = POW×5
+                  6版ルール: STR/CON/POW/DEX/APP/INT = 3d6, SIZ = 2d6+6, EDU = 3d6+3, 幸運 = POW×5, 知識 = EDU×5, アイデア = INT×5
                 </p>
               </div>
               <div className="flex gap-2">
@@ -319,7 +319,7 @@ export default function NewCharacterPage() {
             <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
               副能力値（自動計算）
             </h2>
-            <div className="grid gap-4 md:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   HP
@@ -346,10 +346,18 @@ export default function NewCharacterPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  MOV
+                  知識
                 </label>
                 <div className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white">
-                  {derivedStats.mov}
+                  {stats.edu * 5}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  アイデア
+                </label>
+                <div className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white">
+                  {stats.int * 5}
                 </div>
               </div>
             </div>
