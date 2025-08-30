@@ -102,6 +102,7 @@ export default function ImportPage() {
           ...parsed.stats,
           ...parsed.derivedStats,
           skills: parsed.skills,
+          memo: parsed.memo,
         }),
       })
 
@@ -275,6 +276,20 @@ export default function ImportPage() {
                   ))}
               </div>
             </div>
+
+            {/* メモ表示 */}
+            {parsedCharacter.memo && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-3">
+                  メモ
+                </h3>
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-md p-4 text-sm">
+                  <pre className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                    {parsedCharacter.memo}
+                  </pre>
+                </div>
+              </div>
+            )}
 
             {/* インポートボタン */}
             <div className="flex gap-4">

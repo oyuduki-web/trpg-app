@@ -42,45 +42,45 @@ export function parseIakyaraText(text: string): IakyaraParseResult {
       luck: 0
     },
     skills: {
-      dodge: 0,
-      fight: 25,
-      firearms: 20,
-      accounting: 5,
-      anthropology: 1,
-      archaeology: 1,
-      art: 5,
-      charm: 15,
-      climb: 20,
-      creditRating: 0,
-      cthulhuMythos: 0,
-      disguise: 5,
-      electricalRepair: 10,
-      fastTalk: 5,
-      firstAid: 30,
-      history: 5,
-      jump: 20,
-      languageOwn: 0,
-      law: 5,
-      libraryUse: 20,
-      listen: 20,
-      locksmith: 1,
-      mechanicalRepair: 10,
-      medicine: 1,
-      naturalHistory: 10,
-      navigate: 10,
-      occult: 5,
-      operateHeavyMachinery: 1,
-      persuade: 10,
-      psychology: 10,
-      psychoanalysis: 1,
-      ride: 5,
-      science: 1,
-      sleightOfHand: 10,
-      spotHidden: 25,
-      stealth: 20,
-      swim: 20,
-      throw: 20,
-      track: 10,
+      dodge: 0, // DEX×2で計算
+      fight: 50, // こぶし／パンチ
+      firearms: 20, // 拳銃
+      accounting: 10, // 経理
+      anthropology: 1, // 人類学
+      archaeology: 1, // 考古学
+      art: 5, // 芸術
+      charm: 15, // 信用
+      climb: 40, // 登攀
+      creditRating: 15, // 信用
+      cthulhuMythos: 0, // クトゥルフ神話
+      disguise: 1, // 変装
+      electricalRepair: 10, // 電気修理
+      fastTalk: 5, // 言いくるめ
+      firstAid: 30, // 応急手当
+      history: 20, // 歴史
+      jump: 25, // 跳躍
+      languageOwn: 0, // 母国語 EDU×5で計算
+      law: 5, // 法律
+      libraryUse: 25, // 図書館
+      listen: 25, // 聞き耳
+      locksmith: 1, // 鍵開け
+      mechanicalRepair: 20, // 機械修理
+      medicine: 5, // 医学
+      naturalHistory: 10, // 博物学
+      navigate: 10, // ナビゲート
+      occult: 5, // オカルト
+      operateHeavyMachinery: 1, // 重機械操作
+      persuade: 15, // 説得
+      psychology: 5, // 心理学
+      psychoanalysis: 1, // 精神分析
+      ride: 5, // 乗馬
+      science: 1, // 科学（生物学、物理学等）
+      sleightOfHand: 10, // しのび歩き
+      spotHidden: 25, // 目星
+      stealth: 10, // 隠れる
+      swim: 25, // 水泳
+      throw: 25, // 投擲
+      track: 10, // 追跡
     },
     derivedStats: {
       hp: 0,
@@ -205,21 +205,28 @@ export function parseIakyaraText(text: string): IakyaraParseResult {
 
     // 技能値の解析
     if (currentSection === 'skills') {
-      const skillMatch = line.match(/^([^\s]+(?:\s+[^\s]+)*)\s+(\d+)\s+\d+/)
+      // いあきゃらの技能値フォーマット: "技能名 初期値+職業値+成長値=合計値"
+      // または "技能名 合計値" のパターンに対応
+      const skillMatch = line.match(/^(.+?)\s+(?:\d+\+\d+\+\d+\=)?(\d+)(?:\s|$)/) || 
+                       line.match(/^(.+?)\s+(\d+)(?:\s|$)/)
+      
       if (skillMatch) {
         const skillName = skillMatch[1].trim()
         const totalValue = parseInt(skillMatch[2])
 
-        // 技能名のマッピング
+        // 技能名のマッピング（いあきゃらの表記 → アプリ内技能名）
         const skillMapping: Record<string, keyof CthulhuSkills> = {
           '回避': 'dodge',
           'こぶし（パンチ）': 'fight',
+          'こぶし': 'fight',
+          'パンチ': 'fight',
           '拳銃': 'firearms',
           '経理': 'accounting',
           '人類学': 'anthropology',
           '考古学': 'archaeology',
           '芸術': 'art',
           '信用': 'charm',
+          '信用度': 'creditRating',
           '登攀': 'climb',
           '変装': 'disguise',
           '電気修理': 'electricalRepair',
@@ -228,6 +235,7 @@ export function parseIakyaraText(text: string): IakyaraParseResult {
           '歴史': 'history',
           '跳躍': 'jump',
           '母国語': 'languageOwn',
+          '母国語（日本語）': 'languageOwn',
           '法律': 'law',
           '図書館': 'libraryUse',
           '聞き耳': 'listen',
@@ -243,9 +251,13 @@ export function parseIakyaraText(text: string): IakyaraParseResult {
           '精神分析': 'psychoanalysis',
           '乗馬': 'ride',
           '化学': 'science',
+          '生物学': 'science',
+          '物理学': 'science',
           '隠す': 'sleightOfHand',
+          'しのび歩き': 'sleightOfHand',
           '目星': 'spotHidden',
           '忍び歩き': 'stealth',
+          '隠れる': 'stealth',
           '水泳': 'swim',
           '投擲': 'throw',
           '追跡': 'track',
@@ -265,9 +277,12 @@ export function parseIakyaraText(text: string): IakyaraParseResult {
       }
     }
 
-    // メモの解析
-    if (inMemoSection && line) {
-      memoLines.push(line)
+    // メモの解析 - 【メモ】以下のすべてのテキストを取得
+    if (inMemoSection) {
+      // 空行も含めてメモに追加（ただし最初の空行は除く）
+      if (line || memoLines.length > 0) {
+        memoLines.push(line)
+      }
     }
   }
 
