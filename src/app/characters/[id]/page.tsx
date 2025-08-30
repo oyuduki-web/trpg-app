@@ -194,20 +194,20 @@ export default function CharacterDetailPage() {
               <div className="flex-shrink-0">
                 <div className="w-48 h-64 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 relative">
                   <Image
-                    src={character.images[0].filePath}
+                    src={character.images?.[0]?.filePath || ''}
                     alt={`${character.name}の立ち絵`}
                     width={192}
                     height={256}
                     className="object-cover"
                     onError={() => {
                       // 画像読み込みエラー時の処理
-                      console.log('画像の読み込みに失敗しました:', character.images[0].filePath)
+                      console.log('画像の読み込みに失敗しました:', character.images?.[0]?.filePath)
                     }}
                   />
                 </div>
-                {character.images[0].imageName && (
+                {character.images?.[0]?.imageName && (
                   <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
-                    {character.images[0].imageName}
+                    {character.images?.[0]?.imageName}
                   </p>
                 )}
               </div>
