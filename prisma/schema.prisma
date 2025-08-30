@@ -45,6 +45,9 @@ model Character {
 
   // 技能値（JSON形式で保存）
   skills      String   @default("{}")
+  
+  // メモ
+  memo        String?
 
   // リレーション
   sessions        Session[]

@@ -95,6 +95,7 @@ export async function POST(request: Request) {
         mov: body.mov || 0,
         build: body.build || 0,
         skills: JSON.stringify(body.skills || {}),
+        memo: body.memo || null,
       },
     })
 

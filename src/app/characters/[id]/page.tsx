@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowLeft, Edit, History, BookOpen, ImageIcon, Shield, TrendingUp, Brain, AlertTriangle, Calendar, User, Trash2 } from 'lucide-react'
+import { ArrowLeft, Edit, History, BookOpen, ImageIcon, Shield, TrendingUp, Brain, AlertTriangle, Calendar, User, Trash2, Save, X, FileText } from 'lucide-react'
 import { Character } from '@/generated/prisma'
 import { getSkillNameJa } from '@/lib/skill-names'
 import Navigation from '@/components/Navigation'
@@ -68,6 +68,9 @@ export default function CharacterDetailPage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null)
   const [isDeletingSession, setIsDeletingSession] = useState(false)
+  const [isEditingMemo, setIsEditingMemo] = useState(false)
+  const [memoText, setMemoText] = useState('')
+  const [isSavingMemo, setIsSavingMemo] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -84,6 +87,7 @@ export default function CharacterDetailPage() {
         const characterData = await characterResponse.json()
         characterData.skills = JSON.parse(characterData.skills)
         setCharacter(characterData)
+        setMemoText(characterData.memo || '')
       }
 
       if (sessionsResponse.ok) {
@@ -156,6 +160,44 @@ export default function CharacterDetailPage() {
     } finally {
       setIsDeletingSession(false)
     }
+  }
+
+  const handleSaveMemo = async () => {
+    if (!character) return
+
+    setIsSavingMemo(true)
+    try {
+      const response = await fetch(`/api/characters/${characterId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...character,
+          memo: memoText,
+        }),
+      })
+
+      if (response.ok) {
+        const updatedCharacter = await response.json()
+        updatedCharacter.skills = JSON.parse(updatedCharacter.skills)
+        setCharacter(updatedCharacter)
+        setIsEditingMemo(false)
+      } else {
+        console.error('メモの保存に失敗しました')
+        alert('メモの保存に失敗しました')
+      }
+    } catch (error) {
+      console.error('メモ保存エラー:', error)
+      alert('メモの保存に失敗しました')
+    } finally {
+      setIsSavingMemo(false)
+    }
+  }
+
+  const handleCancelMemo = () => {
+    setMemoText(character?.memo || '')
+    setIsEditingMemo(false)
   }
 
   if (isLoading) {
@@ -468,6 +510,75 @@ export default function CharacterDetailPage() {
                 </div>
               ))}
             </div>
+          </div>
+          
+          {/* メモ欄 */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 lg:col-span-2">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                メモ
+              </h2>
+              {!isEditingMemo && (
+                <button
+                  onClick={() => setIsEditingMemo(true)}
+                  className="flex items-center gap-2 px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  <Edit className="w-3 h-3" />
+                  編集
+                </button>
+              )}
+            </div>
+            
+            {isEditingMemo ? (
+              <div className="space-y-4">
+                <textarea
+                  value={memoText}
+                  onChange={(e) => setMemoText(e.target.value)}
+                  placeholder="キャラクターについてのメモを入力してください..."
+                  className="w-full h-40 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+                />
+                <div className="flex gap-2 justify-end">
+                  <button
+                    onClick={handleCancelMemo}
+                    disabled={isSavingMemo}
+                    className="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors disabled:opacity-50"
+                  >
+                    <X className="w-4 h-4" />
+                    キャンセル
+                  </button>
+                  <button
+                    onClick={handleSaveMemo}
+                    disabled={isSavingMemo}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSavingMemo ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        保存中...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4" />
+                        保存
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="min-h-[120px] p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
+                {character.memo ? (
+                  <p className="text-gray-800 dark:text-white whitespace-pre-wrap">
+                    {character.memo}
+                  </p>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400 italic">
+                    メモがありません。「編集」ボタンからメモを追加できます。
+                  </p>
+                )}
+              </div>
+            )}
           </div>
           </div>
         )}

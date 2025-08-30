@@ -74,6 +74,7 @@ export async function PUT(
         mov: body.mov,
         build: body.build,
         skills: JSON.stringify(body.skills),
+        memo: body.memo,
       },
     })
 
