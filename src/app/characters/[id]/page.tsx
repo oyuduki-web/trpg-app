@@ -508,7 +508,7 @@ export default function CharacterDetailPage() {
                 <div className="text-2xl font-bold text-gray-800 dark:text-white">{character.edu}</div>
               </div>
               <div className="text-center">
-                <div className="text-sm text-gray-600 dark:text-gray-300">LUCK</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">幸運</div>
                 <div className="text-2xl font-bold text-gray-800 dark:text-white">{character.luck}</div>
               </div>
               <div className="text-center">
