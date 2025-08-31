@@ -48,6 +48,9 @@ model Character {
   
   // メモ
   memo        String?
+  
+  // ステータス（ロスト状態）
+  isLost      Boolean  @default(false)
 
   // リレーション
   sessions        Session[]

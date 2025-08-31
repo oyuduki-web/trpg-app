@@ -71,6 +71,7 @@ export default function CharacterDetailPage() {
   const [isEditingMemo, setIsEditingMemo] = useState(false)
   const [memoText, setMemoText] = useState('')
   const [isSavingMemo, setIsSavingMemo] = useState(false)
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -192,6 +193,38 @@ export default function CharacterDetailPage() {
       alert('メモの保存に失敗しました')
     } finally {
       setIsSavingMemo(false)
+    }
+  }
+
+  const handleStatusToggle = async () => {
+    if (!character) return
+
+    setIsUpdatingStatus(true)
+    try {
+      const response = await fetch(`/api/characters/${characterId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...character,
+          isLost: !character.isLost,
+        }),
+      })
+
+      if (response.ok) {
+        const updatedCharacter = await response.json()
+        updatedCharacter.skills = JSON.parse(updatedCharacter.skills)
+        setCharacter(updatedCharacter)
+      } else {
+        console.error('ステータスの更新に失敗しました')
+        alert('ステータスの更新に失敗しました')
+      }
+    } catch (error) {
+      console.error('ステータス更新エラー:', error)
+      alert('ステータスの更新に失敗しました')
+    } finally {
+      setIsUpdatingStatus(false)
     }
   }
 
@@ -413,6 +446,25 @@ export default function CharacterDetailPage() {
               <div className="flex justify-between">
                 <span className="text-gray-600 dark:text-gray-300">現住所:</span>
                 <span className="text-gray-800 dark:text-white">{character.residence || '未設定'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 dark:text-gray-300">ステータス:</span>
+                <div className="flex items-center gap-2">
+                  <span className={`px-2 py-1 rounded text-sm font-medium ${
+                    character.isLost 
+                      ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                      : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                  }`}>
+                    {character.isLost ? 'ロスト' : 'ロスト以外'}
+                  </span>
+                  <button
+                    onClick={handleStatusToggle}
+                    disabled={isUpdatingStatus}
+                    className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
+                    {isUpdatingStatus ? '更新中...' : '切替'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

@@ -75,6 +75,7 @@ export async function PUT(
         build: body.build,
         skills: JSON.stringify(body.skills),
         memo: body.memo,
+        isLost: body.isLost,
       },
     })
 

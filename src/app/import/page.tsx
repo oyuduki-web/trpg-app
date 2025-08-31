@@ -103,6 +103,7 @@ export default function ImportPage() {
           ...parsed.derivedStats,
           skills: parsed.skills,
           memo: parsed.memo,
+          isLost: false,
         }),
       })
 

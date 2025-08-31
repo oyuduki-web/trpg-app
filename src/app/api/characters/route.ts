@@ -11,6 +11,7 @@ export async function GET() {
         age: true,
         san: true,
         maxSan: true,
+        isLost: true,
         createdAt: true,
         updatedAt: true,
         sessions: {
@@ -24,6 +25,13 @@ export async function GET() {
           },
           orderBy: {
             playDate: 'desc'
+          },
+          take: 1
+        },
+        images: {
+          select: {
+            filePath: true,
+            imageName: true,
           },
           take: 1
         },
@@ -50,9 +58,9 @@ export async function GET() {
       lastScenario: character.sessions[0]?.scenario?.title || null,
       sessionCount: character._count.sessions,
       activeSymptoms: character._count.insanitySymptoms,
+      imagePath: character.images[0]?.filePath || null,
       status: character._count.sessions === 0 ? 'new' : 
-              (character.sessions[0]?.playDate && 
-               new Date(character.sessions[0].playDate) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)) ? 'active' : 'inactive'
+              character.isLost ? 'inactive' : 'active'
     }))
 
     return NextResponse.json(charactersWithLastPlay)
@@ -96,6 +104,7 @@ export async function POST(request: Request) {
         build: body.build || 0,
         skills: JSON.stringify(body.skills || {}),
         memo: body.memo || null,
+        isLost: body.isLost || false,
       },
     })
 

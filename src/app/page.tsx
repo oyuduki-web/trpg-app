@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Plus, Users, BookOpen, Search, Filter, Calendar, AlertTriangle } from 'lucide-react'
 
 interface Character {
@@ -17,6 +18,7 @@ interface Character {
   lastScenario: string | null
   sessionCount: number
   activeSymptoms: number
+  imagePath: string | null
   status: 'new' | 'active' | 'inactive'
 }
 
@@ -70,6 +72,7 @@ export default function Home() {
       const response = await fetch('/api/characters')
       if (response.ok) {
         const data = await response.json()
+        console.log('Fetched characters:', data)
         setCharacters(data)
       }
     } catch (error) {
@@ -163,8 +166,8 @@ export default function Home() {
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white appearance-none"
                 >
                   <option value="all">全てのステータス</option>
-                  <option value="active">アクティブ</option>
-                  <option value="inactive">非アクティブ</option>
+                  <option value="active">ロスト以外</option>
+                  <option value="inactive">ロスト</option>
                   <option value="new">新規</option>
                 </select>
               </div>
@@ -204,6 +207,9 @@ export default function Home() {
                       ステータス
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      立ち絵
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       キャラクター
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -229,10 +235,28 @@ export default function Home() {
                           character.status === 'inactive' ? 'bg-yellow-500' :
                           'bg-gray-400'
                         }`} title={
-                          character.status === 'active' ? 'アクティブ (30日以内にプレイ)' :
-                          character.status === 'inactive' ? '非アクティブ (30日以上プレイなし)' :
+                          character.status === 'active' ? 'ロスト以外' :
+                          character.status === 'inactive' ? 'ロスト' :
                           '新規 (未プレイ)'
                         } />
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center relative">
+                          {character.imagePath ? (
+                            <Image
+                              src={character.imagePath}
+                              alt={character.name}
+                              fill
+                              className="object-cover object-top"
+                              onLoad={() => console.log('Image loaded:', character.imagePath)}
+                              onError={(e) => {
+                                console.error('Image load error:', character.imagePath, e)
+                              }}
+                            />
+                          ) : (
+                            <span className="text-xs text-gray-400">画像なし</span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         <Link
