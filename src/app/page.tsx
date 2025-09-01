@@ -188,9 +188,9 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="p-6">
             {isLoading ? (
-              <p className="text-gray-600 dark:text-gray-300 p-6">読み込み中...</p>
+              <p className="text-gray-600 dark:text-gray-300 text-center">読み込み中...</p>
             ) : characters.length === 0 ? (
               <p className="text-gray-600 dark:text-gray-300 text-center py-8">
                 キャラクターがありません。新規作成またはインポートしてください。
@@ -200,123 +200,53 @@ export default function Home() {
                 検索条件に該当するキャラクターがありません。
               </p>
             ) : (
-              <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      ステータス
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      立ち絵
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      キャラクター
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      SAN値
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      最終プレイ
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      セッション数
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      状態
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {filteredCharacters.map((character) => (
-                    <tr key={character.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                      <td className="px-4 py-3">
-                        <div className={`w-3 h-3 rounded-full ${
+              <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+                {filteredCharacters.map((character) => (
+                  <Link
+                    key={character.id}
+                    href={`/characters/${character.id}`}
+                    className="group flex flex-col items-center"
+                  >
+                    <div className="relative transition-transform group-hover:scale-105 aspect-square w-full max-w-32">
+                      {/* ステータス表示 */}
+                      <div className="absolute top-2 right-2 z-10">
+                        <div className={`w-4 h-4 rounded-full border-2 border-white shadow-lg ${
                           character.status === 'active' ? 'bg-green-500' :
-                          character.status === 'inactive' ? 'bg-yellow-500' :
+                          character.status === 'inactive' ? 'bg-red-500' :
                           'bg-gray-400'
                         }`} title={
                           character.status === 'active' ? 'ロスト以外' :
                           character.status === 'inactive' ? 'ロスト' :
                           '新規 (未プレイ)'
                         } />
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center relative">
-                          {character.imagePath ? (
-                            <Image
-                              src={character.imagePath}
-                              alt={character.name}
-                              fill
-                              className="object-cover object-top"
-                              onLoad={() => console.log('Image loaded:', character.imagePath)}
-                              onError={(e) => {
-                                console.error('Image load error:', character.imagePath, e)
-                              }}
-                            />
-                          ) : (
-                            <span className="text-xs text-gray-400">画像なし</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <Link
-                          href={`/characters/${character.id}`}
-                          className="block hover:text-blue-600 dark:hover:text-blue-400"
-                        >
-                          <div className="font-semibold text-gray-900 dark:text-white">
-                            {character.name}
-                          </div>
-                          <div className="text-sm text-gray-600 dark:text-gray-300">
-                            {character.occupation}
-                            {character.age && ` (${character.age}歳)`}
-                          </div>
-                        </Link>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-gray-900 dark:text-white">
-                            {character.san}/{character.maxSan}
-                          </span>
-                          {character.activeSymptoms > 0 && (
-                            <div title={`未回復の狂気症状: ${character.activeSymptoms}個`}>
-                              <AlertTriangle className="w-4 h-4 text-red-500" />
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        {character.lastPlayDate ? (
-                          <div>
-                            <div className="text-sm text-gray-900 dark:text-white">
-                              {new Date(character.lastPlayDate).toLocaleDateString('ja-JP')}
-                            </div>
-                            {character.lastScenario && (
-                              <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-32">
-                                {character.lastScenario}
-                              </div>
-                            )}
-                          </div>
+                      </div>
+                      
+                      {/* キャラクター画像 */}
+                      <div className="w-full h-full relative rounded-full overflow-hidden">
+                        {character.imagePath ? (
+                          <Image
+                            src={character.imagePath}
+                            alt={character.name}
+                            fill
+                            className="object-cover object-top"
+                          />
                         ) : (
-                          <span className="text-sm text-gray-500 dark:text-gray-400">未プレイ</span>
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-600 dark:to-gray-700">
+                            <span className="text-4xl text-gray-400 dark:text-gray-500">👤</span>
+                          </div>
                         )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="text-sm text-gray-900 dark:text-white">
-                          {character.sessionCount}回
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4 text-gray-400" />
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
-                            {new Date(character.updatedAt).toLocaleDateString('ja-JP')}
-                          </span>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                    </div>
+                    
+                    {/* キャラクター名 */}
+                    <div className="mt-2 text-center">
+                      <div className="font-semibold text-sm text-gray-900 dark:text-white truncate max-w-32">
+                        {character.name}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             )}
           </div>
         </div>

@@ -285,6 +285,16 @@ export default function CharacterDetailPage() {
                     {character.images?.[0]?.imageName}
                   </p>
                 )}
+                {/* 立ち絵管理ボタン */}
+                <div className="flex justify-center mt-3">
+                  <Link 
+                    href={`/characters/${characterId}/images`}
+                    className="flex items-center gap-2 px-3 py-2 bg-pink-600 text-white rounded-md hover:bg-pink-700 text-sm"
+                  >
+                    <ImageIcon className="w-4 h-4" />
+                    立ち絵管理
+                  </Link>
+                </div>
               </div>
             ) : (
               <div className="flex-shrink-0">
@@ -294,6 +304,16 @@ export default function CharacterDetailPage() {
                 <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
                   立ち絵なし
                 </p>
+                {/* 立ち絵管理ボタン */}
+                <div className="flex justify-center mt-3">
+                  <Link 
+                    href={`/characters/${characterId}/images`}
+                    className="flex items-center gap-2 px-3 py-2 bg-pink-600 text-white rounded-md hover:bg-pink-700 text-sm"
+                  >
+                    <ImageIcon className="w-4 h-4" />
+                    立ち絵管理
+                  </Link>
+                </div>
               </div>
             )}
             
@@ -303,6 +323,11 @@ export default function CharacterDetailPage() {
                 <div>
                   <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
                     {character.name}
+                    {character.nameReading && (
+                      <span className="text-lg font-normal text-gray-500 dark:text-gray-400 ml-2">
+                        ({character.nameReading})
+                      </span>
+                    )}
                   </h1>
                   <div className="space-y-1 text-gray-600 dark:text-gray-300">
                     {character.occupation && (
@@ -359,13 +384,6 @@ export default function CharacterDetailPage() {
             >
               <History className="w-4 h-4" />
               セッション記録
-            </Link>
-            <Link 
-              href={`/characters/${characterId}/images`}
-              className="flex items-center gap-2 px-4 py-2 bg-pink-600 text-white rounded-md hover:bg-pink-700"
-            >
-              <ImageIcon className="w-4 h-4" />
-              立ち絵管理
             </Link>
             <Link 
               href={`/characters/${characterId}/backup`}

@@ -71,6 +71,7 @@ export interface DerivedStats {
 
 export interface CharacterBasicInfo {
   name: string
+  nameReading?: string
   occupation?: string
   age?: number
   gender?: string

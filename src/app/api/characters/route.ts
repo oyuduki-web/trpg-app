@@ -7,6 +7,7 @@ export async function GET() {
       select: {
         id: true,
         name: true,
+        nameReading: true,
         occupation: true,
         age: true,
         san: true,
@@ -80,6 +81,7 @@ export async function POST(request: Request) {
     const character = await prisma.character.create({
       data: {
         name: body.name,
+        nameReading: body.nameReading,
         occupation: body.occupation,
         age: body.age,
         gender: body.gender,

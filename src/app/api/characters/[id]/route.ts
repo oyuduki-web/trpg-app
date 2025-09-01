@@ -51,6 +51,7 @@ export async function PUT(
       },
       data: {
         name: body.name,
+        nameReading: body.nameReading,
         occupation: body.occupation,
         age: body.age,
         gender: body.gender,
@@ -77,6 +78,13 @@ export async function PUT(
         memo: body.memo,
         isLost: body.isLost,
       },
+      include: {
+        images: {
+          orderBy: {
+            createdAt: 'asc'
+          }
+        }
+      }
     })
 
     return NextResponse.json(character)

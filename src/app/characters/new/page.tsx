@@ -14,6 +14,7 @@ export default function NewCharacterPage() {
   
   const [basicInfo, setBasicInfo] = useState<CharacterBasicInfo>({
     name: '',
+    nameReading: '',
     occupation: '',
     age: undefined,
     gender: '',
@@ -177,6 +178,18 @@ export default function NewCharacterPage() {
                   onChange={(e) => setBasicInfo(prev => ({ ...prev, name: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  読み仮名
+                </label>
+                <input
+                  type="text"
+                  value={basicInfo.nameReading || ''}
+                  onChange={(e) => setBasicInfo(prev => ({ ...prev, nameReading: e.target.value }))}
+                  placeholder="ひらがなで入力"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
               </div>
               <div>
