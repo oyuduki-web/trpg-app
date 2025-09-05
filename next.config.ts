@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 
+// Force Vercel deployment refresh - Grid UI update
 const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
