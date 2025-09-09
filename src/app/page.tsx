@@ -8,12 +8,20 @@ import { Plus, Users, BookOpen, Search, Filter, Calendar, AlertTriangle } from '
 interface Character {
   id: string
   name: string
+  nameReading?: string | null
   occupation?: string
   age?: number
   san: number
   maxSan: number
+  isLost: boolean
   createdAt: string
   updatedAt: string
+  sessions?: any[]
+  images?: any[]
+  _count?: {
+    sessions: number
+    insanitySymptoms: number
+  }
   lastPlayDate: string | null
   lastScenario: string | null
   sessionCount: number
@@ -69,15 +77,21 @@ export default function Home() {
 
   const fetchCharacters = async () => {
     try {
+      console.log('Starting API call to /api/characters')
       const response = await fetch('/api/characters')
+      console.log('API response status:', response.status, response.ok)
       if (response.ok) {
         const data = await response.json()
-        console.log('Fetched characters:', data)
+        console.log('API data received:', data.length, 'characters')
         setCharacters(data)
+        console.log('Characters state set')
+      } else {
+        console.error('API response not ok:', response.status)
       }
     } catch (error) {
       console.error('キャラクター取得エラー:', error)
     } finally {
+      console.log('Setting isLoading to false')
       setIsLoading(false)
     }
   }
