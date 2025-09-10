@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, TrendingUp, Brain, AlertTriangle, Calendar, User } from 'lucide-react'
+import { getSkillNameJa } from '@/lib/skill-names'
 
 interface SessionHistory {
   id: string
@@ -207,7 +208,7 @@ export default function CharacterHistoryPage() {
                       <div className="space-y-2">
                         {session.skillHistories.map((history) => (
                           <div key={history.id} className="text-sm text-green-700 dark:text-green-300">
-                            <span className="font-medium">{history.skillName}</span>: 
+                            <span className="font-medium">{getSkillNameJa(history.skillName)}</span>: 
                             {history.oldValue}% → {history.newValue}% 
                             <span className="text-green-600 dark:text-green-400">
                               (+{history.newValue - history.oldValue})

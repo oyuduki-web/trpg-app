@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ArrowLeft, Save, Plus, Minus, TrendingUp, Brain, AlertTriangle, X, Check } from 'lucide-react'
 import { Character } from '@/generated/prisma'
 import { CthulhuSkills, SkillGrowthResult, InsanitySymptomType } from '@/types/cthulhu'
+import { getSkillNameJa } from '@/lib/skill-names'
 
 interface CharacterWithParsedSkills extends Omit<Character, 'skills'> {
   skills: CthulhuSkills
@@ -351,7 +352,7 @@ export default function SessionUpdatePage() {
                       >
                         <div className="flex justify-between items-center">
                           <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
-                            {skillName.replace(/([A-Z])/g, ' $1').trim()}
+                            {getSkillNameJa(skillName)}
                           </span>
                           <div className="text-right">
                             <div className="text-sm text-gray-600 dark:text-gray-400">
@@ -377,7 +378,7 @@ export default function SessionUpdatePage() {
                     <div className="space-y-1">
                       {sessionData.skillGrowth.map((growth, index) => (
                         <div key={index} className="text-sm text-green-700 dark:text-green-300">
-                          {growth.skillName}: {growth.oldValue}% → {growth.newValue}% 
+                          {getSkillNameJa(growth.skillName)}: {growth.oldValue}% → {growth.newValue}% 
                           (+{growth.newValue - growth.oldValue})
                         </div>
                       ))}
